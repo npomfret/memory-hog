@@ -1,7 +1,7 @@
 'use strict';
 
 import React, {Component} from "react";
-import {AppRegistry, StyleSheet, Text, View, Button, NativeModules} from "react-native";
+import {AppRegistry, StyleSheet, Text, View, Button, NativeModules, AppState} from "react-native";
 
 const RNDeviceInfo = NativeModules.RNDeviceInfo;
 
@@ -14,24 +14,31 @@ export default class MemoryHog extends Component {
   constructor() {
     super();
 
-    this.addJunk = this.addJunk.bind(this);
-    this.state = {
-      junk: []
-    };
+    this._addJunk = this._addJunk.bind(this);
+    this._update = this._update.bind(this);
+    this._handleMemoryWarning = this._handleMemoryWarning.bind(this);
 
+    AppState.addEventListener('memoryWarning', this._handleMemoryWarning);
+
+    this.state = {
+      junk: [],
+      memory: {}
+    };
   }
 
-  addJunk() {
+  _handleMemoryWarning() {
+    console.warn("Memory warning");
+  }
+
+  _addJunk() {
     this.setState({junk: this.state.junk.concat(_junk)});
     this._update();
   }
 
-  componentWillMount() {
-    this.setState({memory: 0});
-  }
-
   componentDidMount() {
     this._update();
+
+    setInterval(this._update, 1000);
   }
 
   _update() {
@@ -59,9 +66,18 @@ export default class MemoryHog extends Component {
       <View style={styles.container}>
         {arr}
 
+        <Text>Junk: {this.state.junk.length}</Text>
+
         <Button
-          onPress={this.addJunk}
+          onPress={this._addJunk}
           title="Add Junk"
+          style={{backgroundColor: "red"}}
+          color="#841584"
+        />
+
+        <Button
+          onPress={() => this.setState({junk: []})}
+          title="Clear Junk"
           style={{backgroundColor: "red"}}
           color="#841584"
         />
