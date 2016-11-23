@@ -7,8 +7,8 @@ import Chart from "./chart";
 const RNDeviceInfo = NativeModules.RNDeviceInfo;
 
 const _junk = [];
-for (let i = 0; i < 1024 * 1024; i++) {
-  _junk.push('');
+for (let i = 0; i < 1024 * 1024 * 10; i++) {
+  _junk.push('a');
 }
 
 export default class MemoryHog extends Component {
@@ -17,22 +17,35 @@ export default class MemoryHog extends Component {
 
     this._addJunk = this._addJunk.bind(this);
     this._update = this._update.bind(this);
+    this._clearJunk = this._clearJunk.bind(this);
     this._handleMemoryWarning = this._handleMemoryWarning.bind(this);
 
     AppState.addEventListener('memoryWarning', this._handleMemoryWarning);
 
     this.state = {
-      junk: [],
       memory: {}
     };
+    this._count = 0;
   }
 
   _handleMemoryWarning() {
     console.warn("Memory warning");
   }
 
+  _clearJunk() {
+    for(let name in this.state) {
+      if(name.startsWith("junk_")) {
+        this.setState({name: null});
+      }
+    }
+  }
+
   _addJunk() {
-    this.setState({junk: this.state.junk.concat(_junk)});
+    const junk = {};
+    junk["junk_" + this._count++] = _junk.slice();
+
+    this.setState(junk);
+
     this._update();
   }
 
@@ -51,20 +64,16 @@ export default class MemoryHog extends Component {
       })
   }
 
-  static formatBytes(bytes) {
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return !bytes && '0 Bytes' || (bytes / Math.pow(1024, i)).toFixed(2) + " " + ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'][i]
-  }
-
   render() {
-    const arr = [];
-    for (let key in this.state.memory) {
-      arr.push(<Text key={arr.length} style={styles.welcome}>{key}: {MemoryHog.formatBytes(this.state.memory[key])}</Text>);
+    let count = 0;
+    for(let name in this.state) {
+      if(name.startsWith("junk_") && this.state[name]) {
+        count++;
+      }
     }
 
     return (
       <View style={styles.container}>
-        <Text>Junk: {this.state.junk.length}</Text>
 
         <Button
           onPress={this._addJunk}
@@ -74,7 +83,7 @@ export default class MemoryHog extends Component {
         />
 
         <Button
-          onPress={() => this.setState({junk: []})}
+          onPress={this._clearJunk}
           title="Clear Junk"
           style={{backgroundColor: "red"}}
           color="#841584"
@@ -84,7 +93,7 @@ export default class MemoryHog extends Component {
           <Chart data={[this.state.memory]} />
         </View>
 
-        {arr}
+        <Text>Junk: {count}x{_junk.length}</Text>
 
       </View>
     );

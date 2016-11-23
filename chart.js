@@ -39,8 +39,6 @@ export default class Chart extends React.Component {
       }
     }
 
-    console.log("update", newData, newChartData);
-
     this.setState({chartData: chartData}, () => {
       Animated.parallel(toAnimate.map(item => {
         return Animated.timing(this.state.chartData[item], {toValue: newChartData[item]})
@@ -74,6 +72,11 @@ export default class Chart extends React.Component {
     return widths
   }
 
+  static formatBytes(bytes) {
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return !bytes && '0 Bytes' || (bytes / Math.pow(1024, i)).toFixed(2) + " " + ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'][i]
+  }
+
   render() {
     const data = this.props.data[0];
 
@@ -89,7 +92,7 @@ export default class Chart extends React.Component {
 
       arr.push(
         <View key={name} style={styles.item}>
-          <Text style={styles.label}>{name} ({data[name]})</Text>
+          <Text style={styles.label}>{name} ({Chart.formatBytes(data[name])})</Text>
           <View style={styles.data}>
             <Animated.View style={[styles.bar, {backgroundColor: color, width: value}]}/>
           </View>
@@ -119,7 +122,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#CBCBCB',
     fontSize: 12,
-    top: 2
+    marginTop: 6
   },
   data: {
     flexDirection: 'row'
