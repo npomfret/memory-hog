@@ -37,9 +37,8 @@ export default class MemoryHog extends Component {
   }
 
   componentDidMount() {
+    setInterval(this._update, 4 * 1000);
     this._update();
-
-    setInterval(this._update, 1000);
   }
 
   _update() {
@@ -82,11 +81,7 @@ export default class MemoryHog extends Component {
         />
 
         <View style={{flex: 1}}>
-          <Chart data={[
-            {'pts': 10, 'ast': 20, 'reb': 30, 'stl': 40, 'blk': 50, 'tov': 60, 'min': 70},
-            {'pts': 100, 'ast': 20, 'reb': 30, 'stl': 40, 'blk': 50, 'tov': 60, 'min': 70},
-            {'pts': 1, 'ast': 20, 'reb': 30, 'stl': 40, 'blk': 50, 'tov': 60, 'min': 70},
-          ]} />
+          <Chart data={[this.state.memory]} />
         </View>
 
         {arr}

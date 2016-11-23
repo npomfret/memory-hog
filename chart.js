@@ -2,96 +2,91 @@
 
 import React from "react";
 import {PropTypes, View, Text, Animated, StyleSheet, TouchableHighlight, Dimensions} from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 
 export default class Chart extends React.Component {
 
   constructor(props) {
     super(props);
-    const data = this.props.data[0];
-    const chartData = this.toChartData(data);
-
-    const initial = {};
-    for(let name in chartData) {
-      initial[name] = new Animated.Value(chartData[name]);
-    }
 
     this.state = {
-      currentIndex: 0,
-      chatData: initial
+      chartData: {}
+    };
+  }
+
+  componentWillMount() {
+    const data = this.props.data[0];
+
+    this.update(data);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.data[0] !== prevProps.data[0]) {
+      this.update(this.props.data[0]);
     }
+  }
+
+  update(newData) {
+    const newChartData = this.toChartData(newData);
+
+    const chartData = this.state.chartData;
+
+    const toAnimate = [];
+    for (let name in newChartData) {
+      if (!chartData[name]) {
+        chartData[name] = new Animated.Value(newChartData[name]);
+      } else {
+        toAnimate.push(name);
+      }
+    }
+
+    console.log("update", newData, newChartData);
+
+    this.setState({chartData: chartData}, () => {
+      Animated.parallel(toAnimate.map(item => {
+        return Animated.timing(this.state.chartData[item], {toValue: newChartData[item]})
+      })).start();
+    });
   }
 
   toChartData(rawData) {
     const deviceWidth = Dimensions.get('window').width;
+
     const maxWidth = deviceWidth * 0.8;
-    const indicators = Object.keys(rawData);
-    const widths = {};
-    let max = Number.MIN_VALUE;
+    let maxValue = Number.MIN_VALUE;
 
-    indicators.forEach(item => {
-      const itemWidth = rawData[item];
-      if (itemWidth > max) {
-        max = itemWidth;
+    for(let name in rawData) {
+      const rawValue = rawData[name];
+      const itemValue = Number.parseInt(rawValue);
+      rawData[name] = itemValue;
+
+      if (itemValue > maxValue) {
+        maxValue = itemValue;
       }
-    });
+    }
+    const unit = maxWidth / maxValue;
 
-    indicators.forEach(item => {
-      const itemWidth = rawData[item] / max;
-      widths[item] = maxWidth * itemWidth;
-    });
+    const widths = {};
+    for(let name in rawData) {
+      const itemValue = rawData[name];
+      widths[name] = itemValue * unit;
+    }
 
     return widths
   }
 
-  componentDidUpdate(prevProps, prevState) {
-
-  }
-
-  onPressLeft() {
-    const {currentIndex} = this.state;
-    if (currentIndex < this.props.data.length - 1)
-      this.handleAnimation(currentIndex + 1)
-  }
-
-  onPressRight() {
-    const {currentIndex} = this.state;
-    if (currentIndex > 0)
-      this.handleAnimation(currentIndex - 1)
-  }
-
-  handleAnimation(newIndex) {
-    const newData = this.toChartData(this.props.data[newIndex]);
-
-    this.update(newData);
-
-    this.setState({currentIndex: newIndex})
-  }
-
-  update(newData) {
-    const indicators = Object.keys(newData);
-
-    Animated.parallel(indicators.map(item => {
-      return Animated.timing(this.state.chatData[item], {toValue: newData[item]})
-    })).start();
-  }
-
   render() {
-    const {currentIndex} = this.state;
-    const data = this.props.data[currentIndex];
-
-    const canPrev = currentIndex < this.props.data.length - 1 ? 1 : 0;
-    const canNext = currentIndex > 0 ? 1 : 0;
+    const data = this.props.data[0];
 
     const colours = ['#F55443', '#FCBD24', '#59838B', '#4D98E4', '#418E50', '#7B7FEC', '#3ABAA4'];
 
     const arr = [];
     let index = 0;
-    for (let name in data) {
+    for (let name in this.state.chartData) {
       const color = colours[index % colours.length];
 
       index++;
-      const value = this.state.chatData[name];
+      const value = this.state.chartData[name];
+
       arr.push(
         <View key={name} style={styles.item}>
           <Text style={styles.label}>{name} ({data[name]})</Text>
@@ -105,16 +100,6 @@ export default class Chart extends React.Component {
     return (
       <View style={styles.container}>
         {arr}
-
-        <View style={styles.controller}>
-          <TouchableHighlight onPress={this.onPressLeft.bind(this)} underlayColor='transparent' style={[styles.button, {opacity: canPrev}]}>
-            <Icon name='ios-arrow-back' size={28} color='#6B7C96' style={styles.chevronLeft}/>
-          </TouchableHighlight>
-          <Text style={styles.date}>kjkj</Text>
-          <TouchableHighlight onPress={this.onPressRight.bind(this)} underlayColor='transparent' style={[styles.button, {opacity: canNext}]}>
-            <Icon name='ios-arrow-forward' size={28} color='#6B7C96' style={styles.chevronRight}/>
-          </TouchableHighlight>
-        </View>
       </View>
     )
   }
