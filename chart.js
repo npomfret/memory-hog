@@ -44,6 +44,10 @@ export default class Chart extends React.Component {
     return widths
   }
 
+  componentDidUpdate(prevProps, prevState) {
+
+  }
+
   onPressLeft() {
     const {currentIndex} = this.state;
     const {data} = this.props;
@@ -55,17 +59,16 @@ export default class Chart extends React.Component {
     if (currentIndex > 0) this.handleAnimation(currentIndex - 1)
   }
 
-  handleAnimation(index) {
-    const {data} = this.props;
-    const width = this.toChartData(data[index]);
-    const timing = Animated.timing;
+  handleAnimation(newIndex) {
+    const newData = this.toChartData(this.props.data[newIndex]);
 
-    const indicators = Object.keys(width);
+    const indicators = Object.keys(newData);
+
     Animated.parallel(indicators.map(item => {
-      return timing(this.state[item], {toValue: width[item]})
+      return Animated.timing(this.state[item], {toValue: newData[item]})
     })).start();
 
-    this.setState({currentIndex: index})
+    this.setState({currentIndex: newIndex})
   }
 
   render() {
