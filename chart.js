@@ -1,178 +1,111 @@
 'use strict';
 
 import React from "react";
-import {
-  PropTypes,
-  View,
-  Text,
-  Animated,
-  StyleSheet,
-  TouchableHighlight,
-  Dimensions
-} from 'react-native'
-
-import Icon from 'react-native-vector-icons/Ionicons';
+import {PropTypes, View, Text, Animated, StyleSheet, TouchableHighlight, Dimensions} from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
 
 export default class Chart extends React.Component {
 
-  constructor (props) {
+  constructor(props) {
     super(props);
     const data = this.props.data[0];
-    const width = this.getWidth(data);
+    const chartData = this.toChartData(data);
+
+    const initial = {};
+    for(let name in chartData) {
+      initial[name] = new Animated.Value(chartData[name]);
+    }
+
     this.state = {
-      pts: new Animated.Value(width.pts),
-      ast: new Animated.Value(width.ast),
-      reb: new Animated.Value(width.reb),
-      stl: new Animated.Value(width.stl),
-      blk: new Animated.Value(width.blk),
-      tov: new Animated.Value(width.tov),
-      min: new Animated.Value(width.min),
-      currentIndex: 0
+      currentIndex: 0,
+      ...initial
     }
   }
 
-  /**
-   * Calculate width of each bar
-   * @params {pts: {Number}, ast, reb, stl, blk, tov, min}
-   * @return {pts: {Number}, ast, reb, stl, blk, tov, min}
-   */
-  getWidth (data) {
+  toChartData(rawData) {
     const deviceWidth = Dimensions.get('window').width;
-    const maxWidth = deviceWidth - 50;
-    const indicators = ['pts', 'ast', 'reb', 'stl', 'blk', 'tov', 'min'];
-    let width = {};
+    const maxWidth = deviceWidth * 0.8;
+    const indicators = Object.keys(rawData);
+    const widths = {};
     let max = Number.MIN_VALUE;
 
     indicators.forEach(item => {
-      const itemWidth = data[item];
-      if(itemWidth > max)
+      const itemWidth = rawData[item];
+      if (itemWidth > max) {
         max = itemWidth;
+      }
     });
-
-    console.log("max", max);
 
     indicators.forEach(item => {
-      const itemWidth = data[item] / max;
-      width[item] = maxWidth * itemWidth;
+      const itemWidth = rawData[item] / max;
+      widths[item] = maxWidth * itemWidth;
     });
 
-    return width
+    return widths
   }
 
-  onPressLeft () {
+  onPressLeft() {
     const {currentIndex} = this.state;
     const {data} = this.props;
     if (currentIndex < data.length - 1) this.handleAnimation(currentIndex + 1)
   }
 
-  onPressRight () {
+  onPressRight() {
     const {currentIndex} = this.state;
     if (currentIndex > 0) this.handleAnimation(currentIndex - 1)
   }
 
-  handleAnimation (index) {
+  handleAnimation(index) {
     const {data} = this.props;
-    const width = this.getWidth(data[index]);
+    const width = this.toChartData(data[index]);
     const timing = Animated.timing;
 
-    const indicators = ['pts', 'ast', 'reb', 'stl', 'blk', 'tov', 'min'];
+    const indicators = Object.keys(width);
     Animated.parallel(indicators.map(item => {
       return timing(this.state[item], {toValue: width[item]})
     })).start();
-    /**
-     * Animated won't trigger react life cycle
-     * I'm not sure if using animated and setState in a same time would affect performance, not bad for now
-     */
-    this.setState({
-      currentIndex: index
-    })
+
+    this.setState({currentIndex: index})
   }
 
-  render () {
-    const {pts, ast, reb, stl, blk, tov, min} = this.state;
+  render() {
     const {currentIndex} = this.state;
     const data = this.props.data[currentIndex];
 
-    /* set opacity=0 if no prev or no next, or the size will be changed unexpected */
     const canPrev = currentIndex < this.props.data.length - 1 ? 1 : 0;
     const canNext = currentIndex > 0 ? 1 : 0;
 
+    const colours = ['#F55443', '#FCBD24', '#59838B', '#4D98E4', '#418E50', '#7B7FEC', '#3ABAA4'];
 
+    const arr = [];
+    let index = 0;
+    for (let name in data) {
+      const color = colours[index % colours.length];
+
+      index++;
+      const value = this.state[name];
+      arr.push(
+        <View key={name} style={styles.item}>
+          <Text style={styles.label}>{name}</Text>
+          <View style={styles.data}>
+            <Animated.View style={[styles.bar, {backgroundColor: color, width: value}]}/>
+            <Text style={styles.dataNumber}>{data[name]}</Text>
+          </View>
+        </View>
+      )
+    }
 
     return (
       <View style={styles.container}>
-
-        <View style={styles.item}>
-          <Text style={styles.label}>Points</Text>
-          <View style={styles.data}>
-            {pts &&
-            <Animated.View style={[styles.bar, styles.points, {width: pts}]} />
-            }
-            <Text style={styles.dataNumber}>{data.pts}</Text>
-          </View>
-        </View>
-        <View style={styles.item}>
-          <Text style={styles.label}>Assists</Text>
-          <View style={styles.data}>
-            {ast &&
-            <Animated.View style={[styles.bar, styles.assists, {width: ast}]} />
-            }
-            <Text style={styles.dataNumber}>{data.ast}</Text>
-          </View>
-        </View>
-        <View style={styles.item}>
-          <Text style={styles.label}>Rebounds</Text>
-          <View style={styles.data}>
-            {reb &&
-            <Animated.View style={[styles.bar, styles.rebounds, {width: reb}]} />
-            }
-            <Text style={styles.dataNumber}>{data.reb}</Text>
-          </View>
-        </View>
-        <View style={styles.item}>
-          <Text style={styles.label}>Steals</Text>
-          <View style={styles.data}>
-            {stl &&
-            <Animated.View style={[styles.bar, styles.steals, {width: stl}]} />
-            }
-            <Text style={styles.dataNumber}>{data.stl}</Text>
-          </View>
-        </View>
-        <View style={styles.item}>
-          <Text style={styles.label}>Blocks</Text>
-          <View style={styles.data}>
-            {blk &&
-            <Animated.View style={[styles.bar, styles.blocks, {width: blk}]} />
-            }
-            <Text style={styles.dataNumber}>{data.blk}</Text>
-          </View>
-        </View>
-        <View style={styles.item}>
-          <Text style={styles.label}>Turnovers</Text>
-          <View style={styles.data}>
-            {tov &&
-            <Animated.View style={[styles.bar, styles.turnovers, {width: tov}]} />
-            }
-            <Text style={styles.dataNumber}>{data.tov}</Text>
-          </View>
-        </View>
-        <View style={styles.item}>
-          <Text style={styles.label}>Minutes</Text>
-          <View style={styles.data}>
-            {min &&
-            <Animated.View style={[styles.bar, styles.minutes, {width: min}]} />
-            }
-            <Text style={styles.dataNumber}>{data.min}</Text>
-          </View>
-        </View>
+        {arr}
 
         <View style={styles.controller}>
           <TouchableHighlight onPress={this.onPressLeft.bind(this)} underlayColor='transparent' style={[styles.button, {opacity: canPrev}]}>
-            <Icon name='ios-arrow-back' size={28} color='#6B7C96' style={styles.chevronLeft} />
+            <Icon name='ios-arrow-back' size={28} color='#6B7C96' style={styles.chevronLeft}/>
           </TouchableHighlight>
           <Text style={styles.date}>kjkj</Text>
           <TouchableHighlight onPress={this.onPressRight.bind(this)} underlayColor='transparent' style={[styles.button, {opacity: canNext}]}>
-            <Icon name='ios-arrow-forward' size={28} color='#6B7C96' style={styles.chevronRight} />
+            <Icon name='ios-arrow-forward' size={28} color='#6B7C96' style={styles.chevronRight}/>
           </TouchableHighlight>
         </View>
       </View>
@@ -209,27 +142,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     height: 8,
     marginRight: 5
-  },
-  points: {
-    backgroundColor: '#F55443'
-  },
-  assists: {
-    backgroundColor: '#FCBD24'
-  },
-  rebounds: {
-    backgroundColor: '#59838B'
-  },
-  steals: {
-    backgroundColor: '#4D98E4'
-  },
-  blocks: {
-    backgroundColor: '#418E50'
-  },
-  turnovers: {
-    backgroundColor: '#7B7FEC'
-  },
-  minutes: {
-    backgroundColor: '#3ABAA4'
   },
   // controller
   controller: {
