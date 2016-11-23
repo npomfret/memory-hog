@@ -2,6 +2,7 @@
 
 import React, {Component} from "react";
 import {AppRegistry, StyleSheet, Text, View, Button, NativeModules, AppState} from "react-native";
+import Chart from "./chart";
 
 const RNDeviceInfo = NativeModules.RNDeviceInfo;
 
@@ -64,8 +65,6 @@ export default class MemoryHog extends Component {
 
     return (
       <View style={styles.container}>
-        {arr}
-
         <Text>Junk: {this.state.junk.length}</Text>
 
         <Button
@@ -81,6 +80,16 @@ export default class MemoryHog extends Component {
           style={{backgroundColor: "red"}}
           color="#841584"
         />
+
+        <View style={{flex: 1}}>
+          <Chart data={[
+            {'pts': 10, 'ast': 20, 'reb': 30, 'stl': 40, 'blk': 50, 'tov': 60, 'min': 70},
+            {'pts': 100, 'ast': 20, 'reb': 30, 'stl': 40, 'blk': 50, 'tov': 60, 'min': 70},
+            {'pts': 1, 'ast': 20, 'reb': 30, 'stl': 40, 'blk': 50, 'tov': 60, 'min': 70},
+          ]} />
+        </View>
+
+        {arr}
 
       </View>
     );

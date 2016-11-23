@@ -9,7 +9,8 @@
   "dependencies": {
     "react": "15.3.2",
     "react-native": "0.37.0",
-    "react-native-device-info": "^0.9.6"
+    "react-native-device-info": "^0.9.6",
+    "react-native-vector-icons": "^3.0.0"
   },
   "jest": {
     "preset": "jest-react-native"
