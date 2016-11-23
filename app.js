@@ -8,7 +8,7 @@ const RNDeviceInfo = NativeModules.RNDeviceInfo;
 
 const _junk = [];
 for (let i = 0; i < 1024 * 1024 * 10; i++) {
-  _junk.push('a');
+  _junk.push(Math.random());
 }
 
 export default class MemoryHog extends Component {
@@ -35,7 +35,9 @@ export default class MemoryHog extends Component {
   _clearJunk() {
     for(let name in this.state) {
       if(name.startsWith("junk_")) {
-        this.setState({name: null});
+        const state = {};
+        state[name] = null;
+        this.setState(state);
       }
     }
   }

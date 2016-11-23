@@ -110,10 +110,8 @@ export default class Chart extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'column',
     marginTop: 6
   },
-  // Item
   item: {
     flexDirection: 'column',
     marginBottom: 5,
@@ -127,49 +125,11 @@ const styles = StyleSheet.create({
   data: {
     flexDirection: 'row'
   },
-  dataNumber: {
-    color: '#CBCBCB',
-    fontSize: 11
-  },
-  // Bar
   bar: {
     alignSelf: 'center',
     borderRadius: 5,
     height: 8,
     marginRight: 5
   },
-  // controller
-  controller: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 15
-  },
-  button: {
-    flex: 1,
-    position: 'relative',
-    top: -1
-  },
-  chevronLeft: {
-    alignSelf: 'flex-end',
-    height: 28,
-    marginRight: 10,
-    width: 28
-  },
-  chevronRight: {
-    alignSelf: 'flex-start',
-    height: 28,
-    marginLeft: 10,
-    width: 28
-  },
-  date: {
-    color: '#6B7C96',
-    flex: 1,
-    fontSize: 22,
-    fontWeight: '300',
-    height: 28,
-    textAlign: 'center'
-  }
-
 });
 
