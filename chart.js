@@ -18,7 +18,7 @@ export default class Chart extends React.Component {
 
     this.state = {
       currentIndex: 0,
-      ...initial
+      chatData: initial
     }
   }
 
@@ -50,7 +50,7 @@ export default class Chart extends React.Component {
 
   onPressLeft() {
     const {currentIndex} = this.state;
-    if (currentIndex < this.props.length - 1)
+    if (currentIndex < this.props.data.length - 1)
       this.handleAnimation(currentIndex + 1)
   }
 
@@ -72,7 +72,7 @@ export default class Chart extends React.Component {
     const indicators = Object.keys(newData);
 
     Animated.parallel(indicators.map(item => {
-      return Animated.timing(this.state[item], {toValue: newData[item]})
+      return Animated.timing(this.state.chatData[item], {toValue: newData[item]})
     })).start();
   }
 
@@ -91,13 +91,12 @@ export default class Chart extends React.Component {
       const color = colours[index % colours.length];
 
       index++;
-      const value = this.state[name];
+      const value = this.state.chatData[name];
       arr.push(
         <View key={name} style={styles.item}>
-          <Text style={styles.label}>{name}</Text>
+          <Text style={styles.label}>{name} ({data[name]})</Text>
           <View style={styles.data}>
             <Animated.View style={[styles.bar, {backgroundColor: color, width: value}]}/>
-            <Text style={styles.dataNumber}>{data[name]}</Text>
           </View>
         </View>
       )
